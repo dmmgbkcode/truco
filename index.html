@@ -1,547 +1,1120 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo de Truco</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #2d6a4f;
-            color: white;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #1b4332;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        h1 {
-            color: #d8f3dc;
-        }
-        .game-area {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        .player-area, .cpu-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #2d6a4f;
-        }
-        .cards {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-            min-height: 120px;
-        }
-        .card {
-            width: 80px;
-            height: 120px;
-            background-color: white;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .card:hover {
-            transform: translateY(-10px);
-        }
-        .card.red {
-            color: red;
-        }
-        .played-area {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            min-height: 120px;
-            margin: 20px 0;
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-        }
-        button {
-            background-color: #52b788;
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        button:hover {
-            background-color: #74c69d;
-        }
-        button:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .score {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-            font-size: 18px;
-        }
-        .manilha {
-            margin: 10px 0;
-            font-size: 18px;
-        }
-        .hidden {
-            background-color: #1b4332;
-            color: #1b4332;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-        .vira {
-            width: 80px;
-            height: 120px;
-            background-color: white;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: black;
-            font-weight: bold;
-            margin: 10px auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .vira.red {
-            color: red;
-        }
-        .round-result {
-            font-size: 24px;
-            margin: 10px 0;
-            height: 30px;
-        }
-        .status {
-            font-size: 18px;
-            height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Truco Online</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #1e5128;
+      --secondary-color: #4e9f3d;
+      --accent-color: #d8e9a8;
+      --text-color: #333;
+      --light-text: #fff;
+      --card-width: 120px;
+      --card-height: 180px;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+      background-image: url('https://img.freepik.com/free-photo/green-poker-table-background_87414-4719.jpg');
+      background-size: cover;
+      background-position: center;
+      height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 40px);
+    }
+    
+    header {
+      text-align: center;
+      padding: 20px;
+      background-color: rgba(30, 81, 40, 0.9);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: var(--light-text);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .login-container {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      border-radius: 8px;
+      margin: auto;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
+    }
+    
+    input[type="text"]:focus {
+      border-color: var(--secondary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(78, 159, 61, 0.2);
+    }
+    
+    button {
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin: 5px;
+    }
+    
+    button:hover {
+      background-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    #gameArea {
+      display: none;
+      flex: 1;
+    }
+    
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .top-area {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    
+    .info-panel {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      flex: 1;
+      margin-right: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .vira-panel {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      width: 200px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .score-panel {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 8px;
+      width: 200px;
+      margin-left: 10px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-display-area {
+      flex: 1;
+      background-color: rgba(78, 159, 61, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
+    .played-cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .played-card-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .player-name {
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-top: 5px;
+      font-size: 14px;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .player-turn {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .round-info {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .your-cards-container {
+      height: 220px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .cards-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .cards-row {
+      display: flex;
+      justify-content: center;
+      flex: 1;
+      gap: 20px;
+    }
+    
+    .card {
+      width: var(--card-width);
+      height: var(--card-height);
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 24px;
+      font-weight: bold;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card.disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .card-red {
+      color: #e74c3c;
+    }
+    
+    .card-black {
+      color: #2c3e50;
+    }
+    
+    .card-top {
+      text-align: left;
+    }
+    
+    .card-bottom {
+      text-align: right;
+      transform: rotate(180deg);
+    }
+    
+    .card-center {
+      font-size: 48px;
+      text-align: center;
+    }
+    
+    .small-card {
+      width: calc(var(--card-width) * 0.7);
+      height: calc(var(--card-height) * 0.7);
+      font-size: 18px;
+    }
+    
+    .small-card .card-center {
+      font-size: 36px;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 10px;
+    }
+    
+    .truco-btn {
+      background-color: #e74c3c;
+      font-weight: bold;
+    }
+    
+    .truco-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(30, 81, 40, 0.9);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 30px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      font-size: 18px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .notification.show {
+      opacity: 1;
+    }
+    
+    .chat-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      height: 400px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 100;
+    }
+    
+    .chat-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 10px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .chat-toggle {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      padding: 0;
+      font-size: 16px;
+    }
+    
+    .chat-messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .chat-input-container {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .chat-submit {
+      margin-left: 5px;
+      padding: 8px 12px;
+      background-color: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .message {
+      max-width: 80%;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    
+    .message.self {
+      align-self: flex-end;
+      background-color: var(--secondary-color);
+      color: white;
+    }
+    
+    .message.other {
+      align-self: flex-start;
+      background-color: #e9e9e9;
+    }
+    
+    .message .sender {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+    
+    .team-score {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      font-size: 16px;
+    }
+    
+    .team-name {
+      font-weight: bold;
+    }
+    
+    .hidden {
+      display: none !important;
+    }
+    
+    .truco-dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      z-index: 1000;
+      width: 300px;
+    }
+    
+    .truco-dialog h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    
+    .truco-dialog p {
+      margin-bottom: 25px;
+      font-size: 18px;
+    }
+    
+    .truco-dialog button {
+      min-width: 100px;
+    }
+    
+    .truco-dialog .accept {
+      background-color: var(--secondary-color);
+    }
+    
+    .truco-dialog .decline {
+      background-color: #e74c3c;
+    }
+    
+    .players-list {
+      padding: 0;
+      list-style-type: none;
+      margin: 10px 0;
+    }
+    
+    .players-list li {
+      padding: 5px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .players-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .team-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    
+    .team-0 {
+      background-color: #3498db;
+    }
+    
+    .team-1 {
+      background-color: #e74c3c;
+    }
+    
+    @keyframes pulsar {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .teu-turno {
+      animation: pulsar 1.5s infinite;
+    }
+    
+    .ponto-ganho {
+      animation: pulsar 0.6s 3;
+    }
+    
+    @keyframes aparecer {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    .novo-elemento {
+      animation: aparecer 0.5s ease-out;
+    }
+    
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(0); }
+      75% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    
+    .shake {
+      animation: shake 0.5s;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Jogo de Truco</h1>
-        
-        <div class="score">
-            <div>Jogador: <span id="player-score">0</span></div>
-            <div>Computador: <span id="cpu-score">0</span></div>
-        </div>
-        
-        <div class="status" id="status">Clique em "Nova Partida" para começar!</div>
-        
-        <div class="game-area">
-            <div class="cpu-area">
-                <h2>Computador</h2>
-                <div class="cards" id="cpu-cards"></div>
-            </div>
-            
-            <div class="center-area">
-                <div class="manilha">Vira: <span id="vira-container"></span></div>
-                <div class="round-result" id="round-result"></div>
-                <div class="played-area">
-                    <div id="cpu-played"></div>
-                    <div id="player-played"></div>
-                </div>
-            </div>
-            
-            <div class="player-area">
-                <h2>Jogador</h2>
-                <div class="cards" id="player-cards"></div>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <button id="new-game">Nova Partida</button>
-            <div class="actions">
-                <button id="truco-btn" disabled>Truco!</button>
-                <button id="accept-btn" disabled>Aceitar</button>
-                <button id="decline-btn" disabled>Recusar</button>
-            </div>
-        </div>
+  <div class="container">
+    <header>
+      <h1>TRUCO ONLINE</h1>
+    </header>
+    
+    <div class="login-container" id="loginArea">
+      <h2>Entre ou crie uma sala</h2>
+      <div class="form-group">
+        <input type="text" id="playerName" placeholder="Seu nome">
+      </div>
+      <div class="form-group">
+        <input type="text" id="roomId" placeholder="ID da sala">
+      </div>
+      <button id="joinBtn">Entrar na Sala</button>
     </div>
-
-    <script>
-        // Constantes
-        const NAIPES = ['♠', '♥', '♦', '♣'];
-        const VALORES = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
-        const PONTOS_CARTA = {
-            '4': 1, '5': 2, '6': 3, '7': 4, 'Q': 5, 
-            'J': 6, 'K': 7, 'A': 8, '2': 9, '3': 10
-        };
+    
+    <div id="gameArea">
+      <div class="game-container">
+        <div class="top-area">
+          <div class="info-panel">
+            <h3>Jogadores na Sala</h3>
+            <ul class="players-list" id="playersList"></ul>
+          </div>
+          
+          <div class="vira-panel">
+            <h3>Vira</h3>
+            <div id="viraCardDisplay" class="card small-card">
+              <div class="card-top">?</div>
+              <div class="card-center">?</div>
+              <div class="card-bottom">?</div>
+            </div>
+            <p>Manilha: <span id="manilhaCard">?</span></p>
+          </div>
+          
+          <div class="score-panel">
+            <h3>Placar</h3>
+            <div class="team-score">
+              <span class="team-name">Equipe 1:</span>
+              <span id="team0Score">0</span>
+            </div>
+            <div class="team-score">
+              <span class="team-name">Equipe 2:</span>
+              <span id="team1Score">0</span>
+            </div>
+            <p>Valor da rodada: <span id="roundValue">1</span></p>
+          </div>
+        </div>
         
-        // Estado do jogo
-        let baralho = [];
-        let maoJogador = [];
-        let maoCPU = [];
-        let cartaVira = null;
-        let manilha = null;
-        let cartasJogadasJogador = [];
-        let cartasJogadasCPU = [];
-        let pontuacaoJogador = 0;
-        let pontuacaoCPU = 0;
-        let rodada = 0;
-        let pontosRodada = 1;
-        let vezDoJogador = true;
-        let pedidoTruco = false;
-        let jogoPausado = false;
+        <div class="card-display-area">
+          <div id="playerTurn" class="player-turn hidden">Vez de: <span id="currentPlayerName"></span></div>
+          <div id="roundInfo" class="round-info hidden">Rodada <span id="currentRound">1</span>/<span id="totalRounds">3</span></div>
+          <div class="played-cards" id="playedCards"></div>
+        </div>
         
-        // Elementos DOM
-        const newGameBtn = document.getElementById('new-game');
-        const trucoBtn = document.getElementById('truco-btn');
-        const acceptBtn = document.getElementById('accept-btn');
-        const declineBtn = document.getElementById('decline-btn');
-        const playerCardsEl = document.getElementById('player-cards');
-        const cpuCardsEl = document.getElementById('cpu-cards');
-        const playerPlayedEl = document.getElementById('player-played');
-        const cpuPlayedEl = document.getElementById('cpu-played');
-        const playerScoreEl = document.getElementById('player-score');
-        const cpuScoreEl = document.getElementById('cpu-score');
-        const viraContainerEl = document.getElementById('vira-container');
-        const roundResultEl = document.getElementById('round-result');
-        const statusEl = document.getElementById('status');
+        <div class="your-cards-container">
+          <h3 class="cards-title">Suas cartas</h3>
+          <div class="cards-row" id="yourCards"></div>
+          <div class="controls">
+            <button id="startGameBtn" disabled>Começar Jogo</button>
+            <button id="trucoBtn" class="truco-btn" disabled>TRUCO!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="notification" id="notification"></div>
+  
+  <div class="chat-container" id="chatContainer">
+    <div class="chat-header">
+      <span>Chat da Sala</span>
+      <button class="chat-toggle" id="chatToggle"><i class="fas fa-minus"></i></button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-container">
+      <input type="text" class="chat-input" id="chatInput" placeholder="Digite sua mensagem...">
+      <button class="chat-submit" id="chatSubmit"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+  
+  <div class="truco-dialog hidden" id="trucoDialog">
+    <h3>TRUCO!</h3>
+    <p><span id="trucoPlayerName"></span> pediu TRUCO!</p>
+    <p>Valor: <span id="trucoValue"></span></p>
+    <div>
+      <button class="accept" id="acceptTruco">ACEITO</button>
+      <button class="decline" id="declineTruco">CORRO</button>
+    </div>
+  </div>
+  
+  <audio id="cardSound" src="https://cdn.freesound.org/previews/240/240776_4107740-lq.mp3" preload="auto"></audio>
+  <audio id="trucoSound" src="https://cdn.freesound.org/previews/240/240777_4107740-lq.mp3" preload="auto"></audio>
+  <audio id="winSound" src="https://cdn.freesound.org/previews/277/277021_5273189-lq.mp3" preload="auto"></audio>
+  
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const cardSound = document.getElementById("cardSound");
+    const trucoSound = document.getElementById("trucoSound");
+    const winSound = document.getElementById("winSound");
+    
+    // Elementos da interface
+    const joinBtn = document.getElementById("joinBtn");
+    const startBtn = document.getElementById("startGameBtn");
+    const trucoBtn = document.getElementById("trucoBtn");
+    const loginArea = document.getElementById("loginArea");
+    const gameArea = document.getElementById("gameArea");
+    const playersList = document.getElementById("playersList");
+    const yourCards = document.getElementById("yourCards");
+    const playedCards = document.getElementById("playedCards");
+    const viraCardDisplay = document.getElementById("viraCardDisplay");
+    const manilhaCard = document.getElementById("manilhaCard");
+    const team0Score = document.getElementById("team0Score");
+    const team1Score = document.getElementById("team1Score");
+    const roundValue = document.getElementById("roundValue");
+    const notification = document.getElementById("notification");
+    const playerTurn = document.getElementById("playerTurn");
+    const currentPlayerName = document.getElementById("currentPlayerName");
+    const roundInfo = document.getElementById("roundInfo");
+    const currentRound = document.getElementById("currentRound");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const chatSubmit = document.getElementById("chatSubmit");
+    const chatToggle = document.getElementById("chatToggle");
+    const chatContainer = document.getElementById("chatContainer");
+    const trucoDialog = document.getElementById("trucoDialog");
+    const trucoPlayerName = document.getElementById("trucoPlayerName");
+    const trucoValue = document.getElementById("trucoValue");
+    const acceptTruco = document.getElementById("acceptTruco");
+    const declineTruco = document.getElementById("declineTruco");
+    
+    // Variáveis do estado do jogo
+    let roomAtual = "";
+    let meuId = "";
+    let meuNome = "";
+    let minhaEquipe = -1;
+    let jogadorAtual = "";
+    let estadoJogo = "esperando";
+    
+    const isNaipeCor = (naipe) => {
+      return naipe === "♥" || naipe === "♦";
+    };
+    
+    // Função para mostrar notificações
+    function mostrarNotificacao(mensagem, duracao = 3000) {
+      notification.textContent = mensagem;
+      notification.classList.add("show");
+      
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, duracao);
+    }
+    
+    // Criar elemento de carta
+    function criarElementoCarta(carta, jogavel = true, tamanho = "normal") {
+      const valor = carta.slice(0, -1);
+      const naipe = carta.slice(-1);
+      const isRed = isNaipeCor(naipe);
+      
+      const cardDiv = document.createElement("div");
+      cardDiv.classList.add("card");
+      if (tamanho === "pequeno") {
+        cardDiv.classList.add("small-card");
+      }
+      cardDiv.classList.add(isRed ? "card-red" : "card-black");
+      if (!jogavel) {
+        cardDiv.classList.add("disabled");
+      }
+      
+      const cardTop = document.createElement("div");
+      cardTop.classList.add("card-top");
+      cardTop.textContent = `${valor}${naipe}`;
+      
+      const cardCenter = document.createElement("div");
+      cardCenter.classList.add("card-center");
+      cardCenter.textContent = naipe;
+      
+      const cardBottom = document.createElement("div");
+      cardBottom.classList.add("card-bottom");
+      cardBottom.textContent = `${valor}${naipe}`;
+      
+      cardDiv.appendChild(cardTop);
+      cardDiv.appendChild(cardCenter);
+      cardDiv.appendChild(cardBottom);
+      
+      if (jogavel) {
+        cardDiv.addEventListener("click", () => {
+          jogarCarta(carta);
+        });
+      }
+      
+      cardDiv.setAttribute("data-carta", carta);
+      
+      return cardDiv;
+    }
+    
+    // Função para jogar uma carta
+    function jogarCarta(carta) {
+      if (estadoJogo !== "jogando" || jogadorAtual !== meuId) {
+        mostrarNotificacao("Não é sua vez de jogar!");
+        return;
+      }
+      
+      cardSound.play();
+      socket.emit("jogarCarta", { roomId: roomAtual, carta });
+    }
+    
+    // Atualizar as cartas do jogador
+    function atualizarCartas(cartas) {
+      yourCards.innerHTML = "";
+      
+      cartas.forEach(carta => {
+        const jogavel = estadoJogo === "jogando" && jogadorAtual === meuId;
+        const cardDiv = criarElementoCarta(carta, jogavel);
+        yourCards.appendChild(cardDiv);
+      });
+    }
+    
+    // Função para atualizar o vira
+    function atualizarVira(vira, manilha) {
+      if (!vira) {
+        viraCardDisplay.innerHTML = "";
+        const placeholderDiv = document.createElement("div");
+        placeholderDiv.classList.add("card-top");
+        placeholderDiv.textContent = "?";
         
-        // Event listeners
-        newGameBtn.addEventListener('click', iniciarNovoJogo);
-        trucoBtn.addEventListener('click', pedirTruco);
-        acceptBtn.addEventListener('click', aceitarTruco);
-        declineBtn.addEventListener('click', recusarTruco);
+        const centerDiv = document.createElement("div");
+        centerDiv.classList.add("card-center");
+        centerDiv.textContent = "?";
         
-        // Funções do jogo
-        function criarBaralho() {
-            const baralho = [];
-            for (const naipe of NAIPES) {
-                for (const valor of VALORES) {
-                    baralho.push({ valor, naipe, isRed: naipe === '♥' || naipe === '♦' });
-                }
-            }
-            return baralho;
+        const bottomDiv = document.createElement("div");
+        bottomDiv.classList.add("card-bottom");
+        bottomDiv.textContent = "?";
+        
+        viraCardDisplay.appendChild(placeholderDiv);
+        viraCardDisplay.appendChild(centerDiv);
+        viraCardDisplay.appendChild(bottomDiv);
+        
+        manilhaCard.textContent = "?";
+        return;
+      }
+      
+      viraCardDisplay.innerHTML = "";
+      
+      const valor = vira.slice(0, -1);
+      const naipe = vira.slice(-1);
+      const isRed = isNaipeCor(naipe);
+      
+      viraCardDisplay.classList.add(isRed ? "card-red" : "card-black");
+      
+      const cardTop = document.createElement("div");
+      cardTop.classList.add("card-top");
+      cardTop.textContent = `${valor}${naipe}`;
+      
+      const cardCenter = document.createElement("div");
+      cardCenter.classList.add("card-center");
+      cardCenter.textContent = naipe;
+      
+      const cardBottom = document.createElement("div");
+      cardBottom.classList.add("card-bottom");
+      cardBottom.textContent = `${valor}${naipe}`;
+      
+      viraCardDisplay.appendChild(cardTop);
+      viraCardDisplay.appendChild(cardCenter);
+      viraCardDisplay.appendChild(cardBottom);
+      
+      manilhaCard.textContent = manilha;
+    }
+    
+    // Função para adicionar mensagem no chat
+    function adicionarMensagemChat(nome, mensagem, isSelf = false) {
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", isSelf ? "self" : "other", "novo-elemento");
+      
+      if (!isSelf) {
+        const sender = document.createElement("div");
+        sender.classList.add("sender");
+        sender.textContent = nome;
+        msgDiv.appendChild(sender);
+      }
+      
+      const content = document.createElement("div");
+      content.textContent = mensagem;
+      msgDiv.appendChild(content);
+      
+      chatMessages.appendChild(msgDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Event listeners para os botões
+    joinBtn.addEventListener("click", () => {
+      const playerName = document.getElementById("playerName").value;
+      const roomId = document.getElementById("roomId").value;
+      
+      if (!playerName || !roomId) {
+        mostrarNotificacao("Preencha seu nome e o ID da sala!");
+        return;
+      }
+      
+      meuNome = playerName;
+      roomAtual = roomId;
+      
+      socket.emit("joinRoom", { playerName, roomId });
+      
+      loginArea.style.display = "none";
+      gameArea.style.display = "block";
+    });
+    
+    startBtn.addEventListener("click", () => {
+      socket.emit("startGame", roomAtual);
+    });
+    
+    trucoBtn.addEventListener("click", () => {
+      if (estadoJogo !== "jogando") {
+        mostrarNotificacao("O jogo não está em andamento!");
+        return;
+      }
+      
+      trucoSound.play();
+      socket.emit("pedirTruco", { roomId: roomAtual });
+    });
+    
+    chatSubmit.addEventListener("click", () => {
+      const mensagem = chatInput.value.trim();
+      if (!mensagem) return;
+      
+      socket.emit("enviarMensagem", { roomId: roomAtual, mensagem });
+      adicionarMensagemChat("Você", mensagem, true);
+      chatInput.value = "";
+    });
+    
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        chatSubmit.click();
+      }
+    });
+    
+    chatToggle.addEventListener
+    chatToggle.addEventListener("click", () => {
+      const chatBody = document.querySelector(".chat-messages, .chat-input-container");
+      if (chatBody.classList.contains("hidden")) {
+        chatBody.classList.remove("hidden");
+        chatToggle.innerHTML = '<i class="fas fa-minus"></i>';
+      } else {
+        chatBody.classList.add("hidden");
+        chatToggle.innerHTML = '<i class="fas fa-plus"></i>';
+      }
+    });
+    
+    acceptTruco.addEventListener("click", () => {
+      socket.emit("responderTruco", { roomId: roomAtual, resposta: "aceito" });
+      trucoDialog.classList.add("hidden");
+    });
+    
+    declineTruco.addEventListener("click", () => {
+      socket.emit("responderTruco", { roomId: roomAtual, resposta: "recuso" });
+      trucoDialog.classList.add("hidden");
+    });
+    
+    // Socket events
+    socket.on("joinSuccess", (data) => {
+      meuId = data.playerId;
+      mostrarNotificacao(`Bem-vindo à sala ${roomAtual}!`);
+      atualizarListaJogadores(data.players);
+      
+      if (data.players.length >= 4) {
+        startBtn.disabled = false;
+      }
+    });
+    
+    socket.on("playerJoined", (data) => {
+      mostrarNotificacao(`${data.playerName} entrou na sala!`);
+      atualizarListaJogadores(data.players);
+      
+      if (data.players.length >= 4) {
+        startBtn.disabled = false;
+      }
+    });
+    
+    socket.on("gameStarted", (data) => {
+      estadoJogo = "jogando";
+      mostrarNotificacao("O jogo começou!");
+      atualizarVira(data.vira, data.manilha);
+      atualizarCartas(data.cartas);
+      atualizarPlacar(data.placar);
+      atualizarJogadorAtual(data.jogadorAtual);
+      
+      roundInfo.classList.remove("hidden");
+      playerTurn.classList.remove("hidden");
+      trucoBtn.disabled = false;
+      startBtn.disabled = true;
+    });
+    
+    socket.on("updateGame", (data) => {
+      atualizarCartas(data.cartas);
+      atualizarJogadorAtual(data.jogadorAtual);
+      atualizarCartasJogadas(data.cartasJogadas);
+      atualizarRodada(data.rodadaAtual, data.totalRodadas);
+      atualizarPlacar(data.placar);
+      roundValue.textContent = data.valorRodada;
+    });
+    
+    socket.on("cartaJogada", (data) => {
+      const { jogador, jogadorNome, carta } = data;
+      mostrarCartaJogada(jogador, jogadorNome, carta);
+      atualizarJogadorAtual(data.proximoJogador);
+    });
+    
+    socket.on("rodadaFinalizada", (data) => {
+      mostrarNotificacao(`Rodada finalizada! Vencedor: ${data.vencedorNome}`);
+      setTimeout(() => {
+        limparCartasJogadas();
+      }, 2000);
+    });
+    
+    socket.on("maoFinalizada", (data) => {
+      mostrarNotificacao(`Mão finalizada! Equipe vencedora: Equipe ${data.equipaVencedora + 1}`);
+      atualizarPlacar(data.placar);
+      setTimeout(() => {
+        winSound.play();
+      }, 500);
+    });
+    
+    socket.on("jogoFinalizado", (data) => {
+      estadoJogo = "finalizado";
+      mostrarNotificacao(`Jogo finalizado! Equipe vencedora: Equipe ${data.equipaVencedora + 1}`, 5000);
+      atualizarPlacar(data.placar);
+      startBtn.disabled = false;
+      trucoBtn.disabled = true;
+      winSound.play();
+    });
+    
+    socket.on("pedidoTruco", (data) => {
+      trucoSound.play();
+      trucoDialog.classList.remove("hidden");
+      trucoPlayerName.textContent = data.jogadorNome;
+      trucoValue.textContent = data.valorPedido;
+    });
+    
+    socket.on("respostaTruco", (data) => {
+      if (data.resposta === "aceito") {
+        mostrarNotificacao(`${data.jogadorNome} aceitou o truco!`);
+        roundValue.textContent = data.novoValor;
+      } else {
+        mostrarNotificacao(`${data.jogadorNome} correu do truco!`);
+      }
+    });
+    
+    socket.on("mensagemRecebida", (data) => {
+      adicionarMensagemChat(data.jogadorNome, data.mensagem);
+    });
+    
+    socket.on("error", (data) => {
+      mostrarNotificacao(data.message);
+    });
+    
+    // Funções auxiliares
+    function atualizarListaJogadores(jogadores) {
+      playersList.innerHTML = "";
+      jogadores.forEach(jogador => {
+        const li = document.createElement("li");
+        
+        if (jogador.equipe !== undefined) {
+          const teamIndicator = document.createElement("span");
+          teamIndicator.classList.add("team-indicator", `team-${jogador.equipe}`);
+          li.appendChild(teamIndicator);
+          
+          if (jogador.id === meuId) {
+            minhaEquipe = jogador.equipe;
+          }
         }
         
-        function embaralhar(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
+        li.appendChild(document.createTextNode(jogador.nome));
+        
+        if (jogador.id === meuId) {
+          li.appendChild(document.createTextNode(" (você)"));
+          li.style.fontWeight = "bold";
         }
         
-        function distribuirCartas() {
-            baralho = embaralhar(criarBaralho());
-            maoJogador = baralho.slice(0, 3);
-            maoCPU = baralho.slice(3, 6);
-            cartaVira = baralho[6];
-            
-            // Definir manilha (carta seguinte ao vira)
-            const indexManilha = VALORES.indexOf(cartaVira.valor);
-            const valorManilha = VALORES[(indexManilha + 1) % VALORES.length];
-            manilha = valorManilha;
-            
-            renderizarMaos();
-            renderizarVira();
-        }
+        playersList.appendChild(li);
+      });
+    }
+    
+    function atualizarJogadorAtual(id) {
+      jogadorAtual = id;
+      
+      // Encontrar o nome do jogador atual para exibir
+      socket.emit("getPlayerName", { roomId: roomAtual, playerId: id }, (nomeJogador) => {
+        currentPlayerName.textContent = nomeJogador;
         
-        function renderizarVira() {
-            viraContainerEl.innerHTML = '';
-            const viraEl = document.createElement('div');
-            viraEl.className = `vira ${cartaVira.isRed ? 'red' : ''}`;
-            viraEl.textContent = `${cartaVira.valor}${cartaVira.naipe}`;
-            viraContainerEl.appendChild(viraEl);
-            
-            statusEl.textContent = `Manilha: ${manilha}`;
+        if (id === meuId) {
+          playerTurn.classList.add("teu-turno");
+          mostrarNotificacao("É sua vez de jogar!");
+        } else {
+          playerTurn.classList.remove("teu-turno");
         }
-        
-        function renderizarMaos() {
-            // Limpar áreas
-            playerCardsEl.innerHTML = '';
-            cpuCardsEl.innerHTML = '';
-            
-            // Renderizar cartas do jogador
-            maoJogador.forEach((carta, index) => {
-                const cardEl = document.createElement('div');
-                cardEl.className = `card ${carta.isRed ? 'red' : ''}`;
-                cardEl.textContent = `${carta.valor}${carta.naipe}`;
-                cardEl.dataset.index = index;
-                cardEl.addEventListener('click', () => jogarCarta(index));
-                playerCardsEl.appendChild(cardEl);
-            });
-            
-            // Renderizar cartas do CPU (viradas)
-            maoCPU.forEach(() => {
-                const cardEl = document.createElement('div');
-                cardEl.className = 'card hidden';
-                cardEl.textContent = '?';
-                cpuCardsEl.appendChild(cardEl);
-            });
+      });
+      
+      // Atualizar as cartas (habilitando ou desabilitando conforme a vez)
+      const cartasElements = yourCards.querySelectorAll(".card");
+      cartasElements.forEach(card => {
+        if (jogadorAtual === meuId) {
+          card.classList.remove("disabled");
+        } else {
+          card.classList.add("disabled");
         }
-        
-        function jogarCarta(index) {
-            if (jogoPausado || !vezDoJogador) return;
-            
-            const carta = maoJogador[index];
-            maoJogador.splice(index, 1);
-            cartasJogadasJogador.push(carta);
-            
-            renderizarCartaJogada(carta, playerPlayedEl);
-            renderizarMaos();
-            
-            vezDoJogador = false;
-            
-            setTimeout(() => {
-                jogadaCPU();
-                verificarVencedorRodada();
-            }, 1000);
+      });
+    }
+    
+    function mostrarCartaJogada(jogadorId, jogadorNome, carta) {
+      const container = document.createElement("div");
+      container.classList.add("played-card-container", "novo-elemento");
+      
+      const cardDiv = criarElementoCarta(carta, false, "pequeno");
+      
+      const nameDiv = document.createElement("div");
+      nameDiv.classList.add("player-name");
+      nameDiv.textContent = jogadorId === meuId ? "Você" : jogadorNome;
+      
+      container.appendChild(cardDiv);
+      container.appendChild(nameDiv);
+      
+      playedCards.appendChild(container);
+    }
+    
+    function limparCartasJogadas() {
+      playedCards.innerHTML = "";
+    }
+    
+    function atualizarCartasJogadas(cartas) {
+      playedCards.innerHTML = "";
+      
+      cartas.forEach(carta => {
+        if (carta.jogador && carta.carta) {
+          mostrarCartaJogada(carta.jogador, carta.jogadorNome, carta.carta);
         }
-        
-        function jogadaCPU() {
-            if (maoCPU.length === 0) return;
-            
-            // Lógica simples: CPU joga a carta com maior valor
-            const index = escolherMelhorCarta();
-            const carta = maoCPU[index];
-            maoCPU.splice(index, 1);
-            cartasJogadasCPU.push(carta);
-            
-            renderizarCartaJogada(carta, cpuPlayedEl);
-            renderizarMaos();
-            
-            vezDoJogador = true;
-        }
-        
-        function escolherMelhorCarta() {
-            // Lógica simples: CPU joga a carta com maior valor ou a menor manilha
-            const cartasOrdenadas = [...maoCPU].sort((a, b) => {
-                const valorA = a.valor === manilha ? 100 : PONTOS_CARTA[a.valor];
-                const valorB = b.valor === manilha ? 100 : PONTOS_CARTA[b.valor];
-                return valorB - valorA;
-            });
-            
-            return maoCPU.indexOf(cartasOrdenadas[0]);
-        }
-        
-        function renderizarCartaJogada(carta, element) {
-            element.innerHTML = '';
-            const cardEl = document.createElement('div');
-            cardEl.className = `card ${carta.isRed ? 'red' : ''}`;
-            cardEl.textContent = `${carta.valor}${carta.naipe}`;
-            element.appendChild(cardEl);
-        }
-        
-        function verificarVencedorRodada() {
-            if (cartasJogadasJogador.length !== cartasJogadasCPU.length) return;
-            
-            const ultimaCartaJogador = cartasJogadasJogador[cartasJogadasJogador.length - 1];
-            const ultimaCartaCPU = cartasJogadasCPU[cartasJogadasCPU.length - 1];
-            
-            // Verificar manilha
-            const jogadorTemManilha = ultimaCartaJogador.valor === manilha;
-            const cpuTemManilha = ultimaCartaCPU.valor === manilha;
-            
-            if (jogadorTemManilha && !cpuTemManilha) {
-                roundResultEl.textContent = "Jogador ganhou a rodada!";
-                rodada++;
-            } else if (!jogadorTemManilha && cpuTemManilha) {
-                roundResultEl.textContent = "Computador ganhou a rodada!";
-                rodada++;
-            } else {
-                // Comparar valores das cartas
-                const valorJogador = PONTOS_CARTA[ultimaCartaJogador.valor];
-                const valorCPU = PONTOS_CARTA[ultimaCartaCPU.valor];
-                
-                if (valorJogador > valorCPU) {
-                    roundResultEl.textContent = "Jogador ganhou a rodada!";
-                    rodada++;
-                } else if (valorCPU > valorJogador) {
-                    roundResultEl.textContent = "Computador ganhou a rodada!";
-                    rodada++;
-                } else {
-                    roundResultEl.textContent = "Empate na rodada!";
-                    rodada++;
-                }
-            }
-            
-            setTimeout(() => {
-                playerPlayedEl.innerHTML = '';
-                cpuPlayedEl.innerHTML = '';
-                
-                if (maoJogador.length === 0 || rodada >= 3) {
-                    finalizarMao();
-                }
-            }, 2000);
-        }
-        
-        function finalizarMao() {
-            // Lógica simples: quem ganhou mais rodadas vence a mão
-            const vitoriasJogador = cartasJogadasJogador.filter((_, i) => {
-                const cartaJogador = cartasJogadasJogador[i];
-                const cartaCPU = cartasJogadasCPU[i];
-                
-                if (cartaJogador.valor === manilha && cartaCPU.valor !== manilha) return true;
-                if (cartaJogador.valor !== manilha && cartaCPU.valor === manilha) return false;
-                
-                return PONTOS_CARTA[cartaJogador.valor] > PONTOS_CARTA[cartaCPU.valor];
-            }).length;
-            
-            const vitoriasCPU = cartasJogadasCPU.filter((_, i) => {
-                const cartaJogador = cartasJogadasJogador[i];
-                const cartaCPU = cartasJogadasCPU[i];
-                
-                if (cartaJogador.valor === manilha && cartaCPU.valor !== manilha) return false;
-                if (cartaJogador.valor !== manilha && cartaCPU.valor === manilha) return true;
-                
-                return PONTOS_CARTA[cartaJogador.valor] < PONTOS_CARTA[cartaCPU.valor];
-            }).length;
-            
-            if (vitoriasJogador > vitoriasCPU) {
-                pontuacaoJogador += pontosRodada;
-                roundResultEl.textContent = `Jogador venceu a mão! +${pontosRodada} pontos`;
-            } else if (vitoriasCPU > vitoriasJogador) {
-                pontuacaoCPU += pontosRodada;
-                roundResultEl.textContent = `Computador venceu a mão! +${pontosRodada} pontos`;
-            } else {
-                roundResultEl.textContent = "Empate na mão!";
-            }
-            
-            atualizarPlacar();
-            resetarMao();
-            
-            setTimeout(() => {
-                roundResultEl.textContent = "";
-                if (pontuacaoJogador >= 12) {
-                    statusEl.textContent = "Jogador venceu o jogo!";
-                    jogoPausado = true;
-                } else if (pontuacaoCPU >= 12) {
-                    statusEl.textContent = "Computador venceu o jogo!";
-                    jogoPausado = true;
-                } else {
-                    distribuirCartas();
-                }
-            }, 2000);
-        }
-        
-        function resetarMao() {
-            cartasJogadasJogador = [];
-            cartasJogadasCPU = [];
-            rodada = 0;
-            pontosRodada = 1;
-            vezDoJogador = true;
-            pedidoTruco = false;
-            
-            trucoBtn.disabled = false;
-            acceptBtn.disabled = true;
-            declineBtn.disabled = true;
-        }
-        
-        function atualizarPlacar() {
-            playerScoreEl.textContent = pontuacaoJogador;
-            cpuScoreEl.textContent = pontuacaoCPU;
-        }
-        
-        function pedirTruco() {
-            if (jogoPausado || pedidoTruco) return;
-            
-            pedidoTruco = true;
-            trucoBtn.disabled = true;
-            jogoPausado = true;
-            
-            statusEl.textContent = "Você pediu truco! Aguardando resposta...";
-            
-            // CPU decide aleatoriamente se aceita
-            setTimeout(() => {
-                const aceitou = Math.random() > 0.3; // 70% de chance de aceitar
-                
-                if (aceitou) {
-                    statusEl.textContent = "Computador aceitou o truco!";
-                    pontosRodada = Math.min(pontosRodada * 2, 12);
-                } else {
-                    statusEl.textContent = "Computador recusou o truco!";
-                    pontuacaoJogador += pontosRodada;
-                    atualizarPlacar();
-                    
-                    setTimeout(() => {
-                        resetarMao();
-                        distribuirCartas();
-                    }, 2000);
-                    return;
-                }
-                
-                jogoPausado = false;
-            }, 1500);
-        }
-        
-        function trucoCPU() {
-            if (jogoPausado || pedidoTruco || Math.random() > 0.2) return; // 20% de chance de pedir truco
-            
-            pedidoTruco = true;
-            jogoPausado = true;
-            statusEl.textContent = "Computador pediu truco!";
-            
-            acceptBtn.disabled = false;
-            declineBtn.disabled = false;
-        }
-        
-        function aceitarTruco() {
-            if (!pedidoTruco) return;
-            
-            acceptBtn.disabled = true;
-            declineBtn.disabled = true;
-            statusEl.textContent = "Você aceitou o truco!";
-            pontosRodada = Math.min(pontosRodada * 2, 12);
-            
-            jogoPausado = false;
-        }
-        
-        function recusarTruco() {
-            if (!pedidoTruco) return;
-            
-            acceptBtn.disabled = true;
-            declineBtn.disabled = true;
-            statusEl.textContent = "Você recusou o truco!";
-            
-            pontuacaoCPU += pontosRodada;
-            atualizarPlacar();
-            
-            setTimeout(() => {
-                resetarMao();
-                distribuirCartas();
-            }, 2000);
-        }
-        
-        function iniciarNovoJogo() {
-            pontuacaoJogador = 0;
-            pontuacaoCPU = 0;
-            jogoPausado = false;
-            
-            atualizarPlacar();
-            resetarMao();
-            distribuirCartas();
-            
-            statusEl.textContent = "Jogo iniciado! Sua vez.";
-            roundResultEl.textContent = "";
-        }
-    </script>
+      });
+    }
+    
+    function atualizarRodada(atual, total) {
+      currentRound.textContent = atual;
+      document.getElementById('totalRounds').textContent = total;
+    }
+    
+    function atualizarPlacar(placar) {
+      team0Score.textContent = placar[0];
+      team1Score.textContent = placar[1];
+      
+      // Adicionar animação para o ponto ganho
+      if (placar[minhaEquipe] > parseInt(minhaEquipe === 0 ? team0Score.textContent : team1Score.textContent)) {
+        const teamScore = minhaEquipe === 0 ? team0Score : team1Score;
+        teamScore.classList.add("ponto-ganho");
+        setTimeout(() => {
+          teamScore.classList.remove("ponto-ganho");
+        }, 1800);
+      }
+    }
+    
+    // Inicializar elementos escondidos no início
+    playerTurn.classList.add("hidden");
+    roundInfo.classList.add("hidden");
+  </script>
 </body>
 </html>
