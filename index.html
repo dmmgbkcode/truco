@@ -650,8 +650,9 @@
   
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io("https://truco-online-1.onrender.com");
-    transports: ["websocket"],
+    const socket = io("https://truco-online-1.onrender.com", {
+  transports: ["websocket"]
+});
     const cardSound = document.getElementById("cardSound");
     const trucoSound = document.getElementById("trucoSound");
     const winSound = document.getElementById("winSound");
