@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Truco</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #2d6a4f;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1b4332;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #d8f3dc;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .player-area, .cpu-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #2d6a4f;
+        }
+        .cards {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+            min-height: 120px;
+        }
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+        }
+        .card.red {
+            color: red;
+        }
+        .played-area {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            min-height: 120px;
+            margin: 20px 0;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            background-color: #52b788;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #74c69d;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .score {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .manilha {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+        .hidden {
+            background-color: #1b4332;
+            color: #1b4332;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .vira {
+            width: 80px;
+            height: 120px;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: black;
+            font-weight: bold;
+            margin: 10px auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .vira.red {
+            color: red;
+        }
+        .round-result {
+            font-size: 24px;
+            margin: 10px 0;
+            height: 30px;
+        }
+        .status {
+            font-size: 18px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Jogo de Truco</h1>
+        
+        <div class="score">
+            <div>Jogador: <span id="player-score">0</span></div>
+            <div>Computador: <span id="cpu-score">0</span></div>
+        </div>
+        
+        <div class="status" id="status">Clique em "Nova Partida" para começar!</div>
+        
+        <div class="game-area">
+            <div class="cpu-area">
+                <h2>Computador</h2>
+                <div class="cards" id="cpu-cards"></div>
+            </div>
+            
+            <div class="center-area">
+                <div class="manilha">Vira: <span id="vira-container"></span></div>
+                <div class="round-result" id="round-result"></div>
+                <div class="played-area">
+                    <div id="cpu-played"></div>
+                    <div id="player-played"></div>
+                </div>
+            </div>
+            
+            <div class="player-area">
+                <h2>Jogador</h2>
+                <div class="cards" id="player-cards"></div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="new-game">Nova Partida</button>
+            <div class="actions">
+                <button id="truco-btn" disabled>Truco!</button>
+                <button id="accept-btn" disabled>Aceitar</button>
+                <button id="decline-btn" disabled>Recusar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constantes
+        const NAIPES = ['♠', '♥', '♦', '♣'];
+        const VALORES = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
+        const PONTOS_CARTA = {
+            '4': 1, '5': 2, '6': 3, '7': 4, 'Q': 5, 
+            'J': 6, 'K': 7, 'A': 8, '2': 9, '3': 10
+        };
+        
+        // Estado do jogo
+        let baralho = [];
+        let maoJogador = [];
+        let maoCPU = [];
+        let cartaVira = null;
+        let manilha = null;
+        let cartasJogadasJogador = [];
+        let cartasJogadasCPU = [];
+        let pontuacaoJogador = 0;
+        let pontuacaoCPU = 0;
+        let rodada = 0;
+        let pontosRodada = 1;
+        let vezDoJogador = true;
+        let pedidoTruco = false;
+        let jogoPausado = false;
+        
+        // Elementos DOM
+        const newGameBtn = document.getElementById('new-game');
+        const trucoBtn = document.getElementById('truco-btn');
+        const acceptBtn = document.getElementById('accept-btn');
+        const declineBtn = document.getElementById('decline-btn');
+        const playerCardsEl = document.getElementById('player-cards');
+        const cpuCardsEl = document.getElementById('cpu-cards');
+        const playerPlayedEl = document.getElementById('player-played');
+        const cpuPlayedEl = document.getElementById('cpu-played');
+        const playerScoreEl = document.getElementById('player-score');
+        const cpuScoreEl = document.getElementById('cpu-score');
+        const viraContainerEl = document.getElementById('vira-container');
+        const roundResultEl = document.getElementById('round-result');
+        const statusEl = document.getElementById('status');
+        
+        // Event listeners
+        newGameBtn.addEventListener('click', iniciarNovoJogo);
+        trucoBtn.addEventListener('click', pedirTruco);
+        acceptBtn.addEventListener('click', aceitarTruco);
+        declineBtn.addEventListener('click', recusarTruco);
+        
+        // Funções do jogo
+        function criarBaralho() {
+            const baralho = [];
+            for (const naipe of NAIPES) {
+                for (const valor of VALORES) {
+                    baralho.push({ valor, naipe, isRed: naipe === '♥' || naipe === '♦' });
+                }
+            }
+            return baralho;
+        }
+        
+        function embaralhar(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        function distribuirCartas() {
+            baralho = embaralhar(criarBaralho());
+            maoJogador = baralho.slice(0, 3);
+            maoCPU = baralho.slice(3, 6);
+            cartaVira = baralho[6];
+            
+            // Definir manilha (carta seguinte ao vira)
+            const indexManilha = VALORES.indexOf(cartaVira.valor);
+            const valorManilha = VALORES[(indexManilha + 1) % VALORES.length];
+            manilha = valorManilha;
+            
+            renderizarMaos();
+            renderizarVira();
+        }
+        
+        function renderizarVira() {
+            viraContainerEl.innerHTML = '';
+            const viraEl = document.createElement('div');
+            viraEl.className = `vira ${cartaVira.isRed ? 'red' : ''}`;
+            viraEl.textContent = `${cartaVira.valor}${cartaVira.naipe}`;
+            viraContainerEl.appendChild(viraEl);
+            
+            statusEl.textContent = `Manilha: ${manilha}`;
+        }
+        
+        function renderizarMaos() {
+            // Limpar áreas
+            playerCardsEl.innerHTML = '';
+            cpuCardsEl.innerHTML = '';
+            
+            // Renderizar cartas do jogador
+            maoJogador.forEach((carta, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = `card ${carta.isRed ? 'red' : ''}`;
+                cardEl.textContent = `${carta.valor}${carta.naipe}`;
+                cardEl.dataset.index = index;
+                cardEl.addEventListener('click', () => jogarCarta(index));
+                playerCardsEl.appendChild(cardEl);
+            });
+            
+            // Renderizar cartas do CPU (viradas)
+            maoCPU.forEach(() => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card hidden';
+                cardEl.textContent = '?';
+                cpuCardsEl.appendChild(cardEl);
+            });
+        }
+        
+        function jogarCarta(index) {
+            if (jogoPausado || !vezDoJogador) return;
+            
+            const carta = maoJogador[index];
+            maoJogador.splice(index, 1);
+            cartasJogadasJogador.push(carta);
+            
+            renderizarCartaJogada(carta, playerPlayedEl);
+            renderizarMaos();
+            
+            vezDoJogador = false;
+            
+            setTimeout(() => {
+                jogadaCPU();
+                verificarVencedorRodada();
+            }, 1000);
+        }
+        
+        function jogadaCPU() {
+            if (maoCPU.length === 0) return;
+            
+            // Lógica simples: CPU joga a carta com maior valor
+            const index = escolherMelhorCarta();
+            const carta = maoCPU[index];
+            maoCPU.splice(index, 1);
+            cartasJogadasCPU.push(carta);
+            
+            renderizarCartaJogada(carta, cpuPlayedEl);
+            renderizarMaos();
+            
+            vezDoJogador = true;
+        }
+        
+        function escolherMelhorCarta() {
+            // Lógica simples: CPU joga a carta com maior valor ou a menor manilha
+            const cartasOrdenadas = [...maoCPU].sort((a, b) => {
+                const valorA = a.valor === manilha ? 100 : PONTOS_CARTA[a.valor];
+                const valorB = b.valor === manilha ? 100 : PONTOS_CARTA[b.valor];
+                return valorB - valorA;
+            });
+            
+            return maoCPU.indexOf(cartasOrdenadas[0]);
+        }
+        
+        function renderizarCartaJogada(carta, element) {
+            element.innerHTML = '';
+            const cardEl = document.createElement('div');
+            cardEl.className = `card ${carta.isRed ? 'red' : ''}`;
+            cardEl.textContent = `${carta.valor}${carta.naipe}`;
+            element.appendChild(cardEl);
+        }
+        
+        function verificarVencedorRodada() {
+            if (cartasJogadasJogador.length !== cartasJogadasCPU.length) return;
+            
+            const ultimaCartaJogador = cartasJogadasJogador[cartasJogadasJogador.length - 1];
+            const ultimaCartaCPU = cartasJogadasCPU[cartasJogadasCPU.length - 1];
+            
+            // Verificar manilha
+            const jogadorTemManilha = ultimaCartaJogador.valor === manilha;
+            const cpuTemManilha = ultimaCartaCPU.valor === manilha;
+            
+            if (jogadorTemManilha && !cpuTemManilha) {
+                roundResultEl.textContent = "Jogador ganhou a rodada!";
+                rodada++;
+            } else if (!jogadorTemManilha && cpuTemManilha) {
+                roundResultEl.textContent = "Computador ganhou a rodada!";
+                rodada++;
+            } else {
+                // Comparar valores das cartas
+                const valorJogador = PONTOS_CARTA[ultimaCartaJogador.valor];
+                const valorCPU = PONTOS_CARTA[ultimaCartaCPU.valor];
+                
+                if (valorJogador > valorCPU) {
+                    roundResultEl.textContent = "Jogador ganhou a rodada!";
+                    rodada++;
+                } else if (valorCPU > valorJogador) {
+                    roundResultEl.textContent = "Computador ganhou a rodada!";
+                    rodada++;
+                } else {
+                    roundResultEl.textContent = "Empate na rodada!";
+                    rodada++;
+                }
+            }
+            
+            setTimeout(() => {
+                playerPlayedEl.innerHTML = '';
+                cpuPlayedEl.innerHTML = '';
+                
+                if (maoJogador.length === 0 || rodada >= 3) {
+                    finalizarMao();
+                }
+            }, 2000);
+        }
+        
+        function finalizarMao() {
+            // Lógica simples: quem ganhou mais rodadas vence a mão
+            const vitoriasJogador = cartasJogadasJogador.filter((_, i) => {
+                const cartaJogador = cartasJogadasJogador[i];
+                const cartaCPU = cartasJogadasCPU[i];
+                
+                if (cartaJogador.valor === manilha && cartaCPU.valor !== manilha) return true;
+                if (cartaJogador.valor !== manilha && cartaCPU.valor === manilha) return false;
+                
+                return PONTOS_CARTA[cartaJogador.valor] > PONTOS_CARTA[cartaCPU.valor];
+            }).length;
+            
+            const vitoriasCPU = cartasJogadasCPU.filter((_, i) => {
+                const cartaJogador = cartasJogadasJogador[i];
+                const cartaCPU = cartasJogadasCPU[i];
+                
+                if (cartaJogador.valor === manilha && cartaCPU.valor !== manilha) return false;
+                if (cartaJogador.valor !== manilha && cartaCPU.valor === manilha) return true;
+                
+                return PONTOS_CARTA[cartaJogador.valor] < PONTOS_CARTA[cartaCPU.valor];
+            }).length;
+            
+            if (vitoriasJogador > vitoriasCPU) {
+                pontuacaoJogador += pontosRodada;
+                roundResultEl.textContent = `Jogador venceu a mão! +${pontosRodada} pontos`;
+            } else if (vitoriasCPU > vitoriasJogador) {
+                pontuacaoCPU += pontosRodada;
+                roundResultEl.textContent = `Computador venceu a mão! +${pontosRodada} pontos`;
+            } else {
+                roundResultEl.textContent = "Empate na mão!";
+            }
+            
+            atualizarPlacar();
+            resetarMao();
+            
+            setTimeout(() => {
+                roundResultEl.textContent = "";
+                if (pontuacaoJogador >= 12) {
+                    statusEl.textContent = "Jogador venceu o jogo!";
+                    jogoPausado = true;
+                } else if (pontuacaoCPU >= 12) {
+                    statusEl.textContent = "Computador venceu o jogo!";
+                    jogoPausado = true;
+                } else {
+                    distribuirCartas();
+                }
+            }, 2000);
+        }
+        
+        function resetarMao() {
+            cartasJogadasJogador = [];
+            cartasJogadasCPU = [];
+            rodada = 0;
+            pontosRodada = 1;
+            vezDoJogador = true;
+            pedidoTruco = false;
+            
+            trucoBtn.disabled = false;
+            acceptBtn.disabled = true;
+            declineBtn.disabled = true;
+        }
+        
+        function atualizarPlacar() {
+            playerScoreEl.textContent = pontuacaoJogador;
+            cpuScoreEl.textContent = pontuacaoCPU;
+        }
+        
+        function pedirTruco() {
+            if (jogoPausado || pedidoTruco) return;
+            
+            pedidoTruco = true;
+            trucoBtn.disabled = true;
+            jogoPausado = true;
+            
+            statusEl.textContent = "Você pediu truco! Aguardando resposta...";
+            
+            // CPU decide aleatoriamente se aceita
+            setTimeout(() => {
+                const aceitou = Math.random() > 0.3; // 70% de chance de aceitar
+                
+                if (aceitou) {
+                    statusEl.textContent = "Computador aceitou o truco!";
+                    pontosRodada = Math.min(pontosRodada * 2, 12);
+                } else {
+                    statusEl.textContent = "Computador recusou o truco!";
+                    pontuacaoJogador += pontosRodada;
+                    atualizarPlacar();
+                    
+                    setTimeout(() => {
+                        resetarMao();
+                        distribuirCartas();
+                    }, 2000);
+                    return;
+                }
+                
+                jogoPausado = false;
+            }, 1500);
+        }
+        
+        function trucoCPU() {
+            if (jogoPausado || pedidoTruco || Math.random() > 0.2) return; // 20% de chance de pedir truco
+            
+            pedidoTruco = true;
+            jogoPausado = true;
+            statusEl.textContent = "Computador pediu truco!";
+            
+            acceptBtn.disabled = false;
+            declineBtn.disabled = false;
+        }
+        
+        function aceitarTruco() {
+            if (!pedidoTruco) return;
+            
+            acceptBtn.disabled = true;
+            declineBtn.disabled = true;
+            statusEl.textContent = "Você aceitou o truco!";
+            pontosRodada = Math.min(pontosRodada * 2, 12);
+            
+            jogoPausado = false;
+        }
+        
+        function recusarTruco() {
+            if (!pedidoTruco) return;
+            
+            acceptBtn.disabled = true;
+            declineBtn.disabled = true;
+            statusEl.textContent = "Você recusou o truco!";
+            
+            pontuacaoCPU += pontosRodada;
+            atualizarPlacar();
+            
+            setTimeout(() => {
+                resetarMao();
+                distribuirCartas();
+            }, 2000);
+        }
+        
+        function iniciarNovoJogo() {
+            pontuacaoJogador = 0;
+            pontuacaoCPU = 0;
+            jogoPausado = false;
+            
+            atualizarPlacar();
+            resetarMao();
+            distribuirCartas();
+            
+            statusEl.textContent = "Jogo iniciado! Sua vez.";
+            roundResultEl.textContent = "";
+        }
+    </script>
+</body>
+</html>
